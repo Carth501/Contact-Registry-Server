@@ -1,0 +1,4 @@
+
+*.sql
+
+node_modules\*

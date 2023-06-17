@@ -10,15 +10,15 @@ app.use(bodyParser.json());
 
 const jsonParser = bodyParser.json();
 
-var mysql = require('mysql');
+var mysql = require('mysql2');
 
 var con = mysql.createConnection({
   host: "localhost",
-  user: "newuser",
+  user: "root",
   password: "ZK#9Q&mBN"
 });
 
-const sql = `SELECT * FROM sakila.actor LIMIT 3`;
+const sql = `SELECT * FROM sys.records LIMIT 3`;
 
 con.connect(function(err) {
     if (err) throw err;
@@ -38,21 +38,40 @@ app.use(
 );
 
 app.post('/api/contact', jsonParser, function (req, res) {
-    console.log(req.body);
-    
-    const cols = 'phone, registrationtexts, registrationcalls, electiontexts, electioncalls';
-    const args = [
-      req.body.phoneNumber, 
-      req.body.registrationTexts, 
-      req.body.registrationCalls, 
-      req.body.electionTexts, 
-      req.body.electionCalls
-    ];
-        
-    con.query(`INSERT INTO data.records (${cols}) VALUES (?, ?, ?, ?, ?)`, args, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + JSON.stringify(result));
-    });
+  console.log(req.body);
+  const cols = 'phone, registrationtexts, registrationcalls, electiontexts, electioncalls';
+  const args = [
+    req.body.phoneNumber, 
+    req.body.registrationTexts, 
+    req.body.registrationCalls, 
+    req.body.electionTexts, 
+    req.body.electionCalls
+  ];
+      
+  con.query(`INSERT INTO sys.records2 (${cols}) VALUES (?, ?, ?, ?, ?)`, args, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + JSON.stringify(result));
+  });
+});
+
+app.get('/api/data', jsonParser, function(req, res) {
+  const recordsRequest = `SELECT * FROM sys.records2;`;
+  con.query(recordsRequest, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + JSON.stringify(result));
+    res.send(result);
+  });
+});
+
+app.post('/api/newCustomer', jsonParser, function (req, res) {
+  console.log(req.body);
+  const cols = 'name';
+  const args = [req.body.name];
+
+  con.query(`INSERT INTO sys.customers (${cols}) VALUES (?)`, args, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + JSON.stringify(result));
+  });
 });
 
 app.listen(PORT, () => {

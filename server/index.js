@@ -65,10 +65,11 @@ app.get('/api/data', jsonParser, function(req, res) {
 
 app.post('/api/newCustomer', jsonParser, function (req, res) {
   console.log(req.body);
-  const cols = 'name';
-  const args = [req.body.name];
+  const cols = 'name, apikey';
+  let apikey = Math.round(Math.random() * 1000000000);
+  const args = [req.body.name, apikey];
 
-  con.query(`INSERT INTO sys.customers (${cols}) VALUES (?)`, args, function (err, result) {
+  con.query(`INSERT INTO sys.customers (${cols}) VALUES (?, ?)`, args, function (err, result) {
     if (err) throw err;
     console.log("Result: " + JSON.stringify(result));
   });

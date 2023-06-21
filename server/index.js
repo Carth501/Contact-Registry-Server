@@ -55,7 +55,14 @@ app.post('/api/contact', jsonParser, function (req, res) {
 });
 
 app.get('/api/data', jsonParser, function(req, res) {
-  const recordsRequest = `SELECT * FROM sys.records2;`;
+  const recordsRequest = `
+  SELECT * FROM (
+    SELECT *,if(@last_phone=phone,0,1) as new_phone_group,@last_phone:=phone
+    FROM sys.records2 
+    ORDER BY phone,creationtime DESC
+  ) as t1
+  WHERE new_phone_group=1;
+  `;
   con.query(recordsRequest, function (err, result) {
     if (err) throw err;
     console.log("Result: " + JSON.stringify(result));
@@ -64,7 +71,6 @@ app.get('/api/data', jsonParser, function(req, res) {
 });
 
 app.post('/api/newCustomer', jsonParser, function (req, res) {
-  console.log(req.body);
   const cols = 'name, apikey';
   let apikey = Math.round(Math.random() * 10000000000);
   const args = [req.body.name, apikey];
@@ -74,6 +80,16 @@ app.post('/api/newCustomer', jsonParser, function (req, res) {
     console.log("Result: " + JSON.stringify(result));
     res.send({apikey: apikey});
   });
+});
+
+app.post('/api/retrieve', jsonParser, function (req, res) {
+  const args = [req.body.uuid];
+
+  con.query(`SELECT phone FROM sys.records2 WHERE guid = ?`,
+  args, function (err, result) {
+    if (err) throw err;
+    res.send(result[0]);
+  })
 });
 
 app.listen(PORT, () => {

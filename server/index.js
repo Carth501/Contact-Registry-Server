@@ -1,7 +1,9 @@
-// server/index.js
+'use strict';
+
 const cors = require("cors");
 const express = require("express");
-const bodyParser = require("body-parser")
+const path = require('path');
+const bodyParser = require("body-parser");
 
 const PORT = process.env.PORT || 3001;
 
@@ -28,6 +30,8 @@ con.connect(function(err) {
       //console.log("Result: " + JSON.stringify(result));
     });
   }); 
+
+app.use(express.static(path.join(__dirname, '../react-app/build')));
 
 app.use(
     cors({

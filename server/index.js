@@ -55,6 +55,7 @@ app.post('/api/contact', jsonParser, function (req, res) {
   con.query(`INSERT INTO sys.records2 (${cols}) VALUES (?, ?, ?, ?, ?)`, args, function (err, result) {
     if (err) throw err;
     console.log("Result: " + JSON.stringify(result));
+    res.send();
   });
 });
 

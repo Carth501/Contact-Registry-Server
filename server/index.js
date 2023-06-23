@@ -20,16 +20,18 @@ var con = mysql.createConnection({
   password: "ZK#9Q&mBN"
 });
 
-const sql = `SELECT * FROM sys.records LIMIT 3`;
+const testsql = `SELECT * FROM sys.records LIMIT 3`;
 
 con.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-    con.query(sql, function (err, result) {
+    con.query(testsql, function (err, result) {
       if (err) throw err;
       //console.log("Result: " + JSON.stringify(result));
     });
   }); 
+
+  const recordsTable = 'sys.records3';
 
 app.use(express.static(path.join(__dirname, '../react-app/build')));
 
@@ -41,18 +43,26 @@ app.use(
     })
 );
 
-app.post('/api/contact', jsonParser, function (req, res) {
+app.post('/api/create_record3', jsonParser, function (req, res) {
   console.log(req.body);
-  const cols = 'phone, registrationtexts, registrationcalls, electiontexts, electioncalls';
+  const cols = "name, email, address, zip, phone, registrationemail, registrationmail, registrationtexts, registrationcalls, electionemail, electionmail, electiontexts, electioncalls";
   const args = [
+    req.body.name,
+    req.body.email,
+    req.body.address,
+    req.body.zip,
     req.body.phoneNumber, 
+    req.body.registrationEmail,
+    req.body.registrationMail,
     req.body.registrationTexts, 
     req.body.registrationCalls, 
+    req.body.electionEmail, 
+    req.body.electionMail, 
     req.body.electionTexts, 
     req.body.electionCalls
   ];
       
-  con.query(`INSERT INTO sys.records2 (${cols}) VALUES (?, ?, ?, ?, ?)`, args, function (err, result) {
+  con.query(`INSERT INTO ${recordsTable} (${cols}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, args, function (err, result) {
     if (err) throw err;
     console.log("Result: " + JSON.stringify(result));
     res.send();
@@ -63,7 +73,7 @@ app.get('/api/data', jsonParser, function(req, res) {
   const recordsRequest = `
   SELECT * FROM (
     SELECT *,if(@last_phone=phone,0,1) as new_phone_group,@last_phone:=phone
-    FROM sys.records2 
+    FROM sys.${recordsTable} 
     ORDER BY phone,creationtime DESC
   ) as t1
   WHERE new_phone_group=1;
@@ -90,7 +100,7 @@ app.post('/api/newCustomer', jsonParser, function (req, res) {
 app.post('/api/retrieve', jsonParser, function (req, res) {
   const args = [req.body.uuid];
 
-  con.query(`SELECT phone FROM sys.records2 WHERE guid = ?`,
+  con.query(`SELECT phone FROM sys.${recordsTable} WHERE guid = ?`,
   args, function (err, result) {
     if (err) throw err;
     res.send(result[0]);

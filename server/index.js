@@ -27,7 +27,6 @@ con.connect(function(err) {
     console.log("Connected!");
     con.query(testsql, function (err, result) {
       if (err) throw err;
-      //console.log("Result: " + JSON.stringify(result));
     });
   }); 
 
@@ -73,7 +72,7 @@ app.get('/api/data', jsonParser, function(req, res) {
   const recordsRequest = `
   SELECT * FROM (
     SELECT *,if(@last_phone=phone,0,1) as new_phone_group,@last_phone:=phone
-    FROM sys.${recordsTable} 
+    FROM ${recordsTable} 
     ORDER BY phone,creationtime DESC
   ) as t1
   WHERE new_phone_group=1;
@@ -100,7 +99,7 @@ app.post('/api/newCustomer', jsonParser, function (req, res) {
 app.post('/api/retrieve', jsonParser, function (req, res) {
   const args = [req.body.uuid];
 
-  con.query(`SELECT phone FROM sys.${recordsTable} WHERE guid = ?`,
+  con.query(`SELECT phone FROM ${recordsTable} WHERE guid = ?`,
   args, function (err, result) {
     if (err) throw err;
     res.send(result[0]);

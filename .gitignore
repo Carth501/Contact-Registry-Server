@@ -1,4 +1,5 @@
 react-app/
 *.sql
+.env
 
 node_modules/

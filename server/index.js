@@ -1,29 +1,27 @@
-'use strict';
-
 const cors = require("cors");
 const express = require("express");
-const path = require('path');
+const { initializeApp } = require('firebase/app');
+const { addDoc, collection, getFirestore } = require("firebase/firestore");
+const path = require("path");
+const url = require('url');
 const bodyParser = require("body-parser");
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+require("dotenv").config();
 
 const firebaseConfig = {
   apiKey: process.env.APIKEY,
   authDomain: process.env.AUTHDOMAIN,
   projectId: process.env.PROJECTID,
   storageBucket: process.env.STORAGEBUCKET,
-  messagingSenderId: process.env.MESSAGESENDERID,
+  messagingSenderId: process.env.MESSAGINGSENDERID,
   appId: process.env.APPID
 };
 
 const fbapp = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const PORT = process.env.PORT || 3001;
 
 const app = express();
-app.use(bodyParser.json()); //am I still using this?
-
-const jsonParser = bodyParser.json(); //am I still using this?
+const db = getFirestore(fbapp);
+const PORT = process.env.PORT || 3001;
+const jsonParser = bodyParser.json();
 
 app.use(express.static(path.join(__dirname, '../react-app/build')));
 
@@ -35,22 +33,23 @@ app.use(
   })
 );
 
-app.post('/api/create_record_GCP_Fs', async function (req, res) {
+app.post('/api/create_record3', jsonParser, async function (req, res) {
+  console.log(req.body);
   try {
-    const docRef = await addDoc(collection(db, "users", req.body.phoneNumber), {
+    const docRef = await addDoc(collection(db, "records/users", req.body.phoneNumber), {
       name: req.body.name,
       email: req.body.email,
       address: req.body.address,
       zip: req.body.zip,
       phoneNumber: req.body.phoneNumber,
-      registrationEmail: req.body.registrationEmail,
-      registrationMail: req.body.registrationMail,
-      registrationTexts: req.body.registrationTexts,
-      registrationCalls: req.body.registrationCalls,
-      electionEmail: req.body.electionEmail,
-      electionMail: req.body.electionMail,
-      electionTexts: req.body.electionTexts,
-      electionCalls: req.body.electionCalls,
+      registrationEmail: req.body.registrationEmail || null,
+      registrationMail: req.body.registrationMail || null,
+      registrationTexts: req.body.registrationTexts || null,
+      registrationCalls: req.body.registrationCalls || null,
+      electionEmail: req.body.electionEmail || null,
+      electionMail: req.body.electionMail || null,
+      electionTexts: req.body.electionTexts || null,
+      electionCalls: req.body.electionCalls || null,
       datetime: Date.now()
     });
     res.send(docRef);
@@ -59,7 +58,7 @@ app.post('/api/create_record_GCP_Fs', async function (req, res) {
   }
 });
 
-app.get('/api/data', async function (req, res) {
+app.get('/api/data', jsonParser, async function (req, res) {
   const querySnapshot = await getDocs(collection(db, "users"));
   const docs = [];
   querySnapshot.forEach((doc) => {
